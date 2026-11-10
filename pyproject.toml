@@ -1,7 +1,7 @@
 [project]
-name = "pdm-project-template"
+name = "uv-project-template"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "A Python project template managed with uv"
 authors = [
     {name = "Cvandia", email = "106718176+Cvandia@users.noreply.github.com"},
 ]
@@ -11,12 +11,9 @@ readme = "README.md"
 license = {text = "MIT"}
 
 
-[tool.pdm]
-distribution = true
-
 [dependency-groups]
-dev = ["pre-commit>=4.0.1", "ruff>=0.8.1"]
+dev = ["pre-commit>=4.0.1", "ruff>=0.8.1", "pytest>=8.3.4"]
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["uv_build>=0.8.18,<0.9.0"]
+build-backend = "uv_build"
