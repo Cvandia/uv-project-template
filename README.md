@@ -1,74 +1,134 @@
-# uv-project-template
+<div align="center">
 
-使用 [uv](https://docs.astral.sh/uv/) 管理依赖、虚拟环境、构建和发布的 Python 项目模板，支持 Python 3.10 及以上版本。
+# project_name
 
-## 开始使用
+<a href="https://v2.nonebot.dev/store">
+<img src="https://count.getloli.com/get/@uv-project-template?theme=booru-lewd"></a>
 
-1. 在 GitHub 点击 **Use this template** 创建自己的仓库，或克隆本仓库：
+_⭐基于xxx的uv项目⭐_
 
-   ```bash
-   git clone https://github.com/Cvandia/uv-project-template.git
-   cd uv-project-template
-   ```
+<a href="https://www.python.org/downloads/release/python-390/">
+    <img src="https://img.shields.io/badge/python-3.10+-blue"></a>
+<a href="https://qm.qq.com/q/SL6m4KdFe4">
+    <img src="https://img.shields.io/badge/QQ-1141538825-yellow"></a>
+<a href="https://github.com/Cvandia/uv-project-template/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue"></a>
+<a href="https://v2.nonebot.dev/">
+    <img src="https://img.shields.io/badge/Nonebot2-2.2.0+-red"></a>
+<a href="https://docs.astral.sh/uv/">
+  <img src="https://img.shields.io/badge/uv-managed-de5fe9" alt="uv-managed"></a>
+<a href="https://github.com/Cvandia/uv-project-template/blob/main/.github/workflows/ruff-check.yml">
+    <img src="https://github.com/Cvandia/uv-project-template/actions/workflows/ruff-check.yml/badge.svg?branch=main"></a>
 
-2. 按照 [官方文档](https://docs.astral.sh/uv/getting-started/installation/) 安装 uv，然后安装项目和开发依赖：
+**中文简体**
 
-   ```bash
-   uv sync --locked
-   uv run pre-commit install
-   ```
+</div>
 
-3. 修改 `pyproject.toml` 中的项目名称、描述、作者和版本，并将 `src/uv_project_template` 重命名为自己的 Python 包名（使用下划线）。同步修改测试导入和 README 中的仓库链接，然后执行 `uv lock` 更新锁文件。
+---
 
-## 常用命令
+## 📝 介绍
+
+**这是介绍项目的简介，请根据实际情况修改。**
+这是具体介绍内容
+
+> [!WARNING]
+> 这是最新提示信息
+
+## 📜 免责声明
+
+> [!CAUTION]
+> 本项目仅供**学习**和**研究**使用，使用者需自行承担使用插件的风险。作者不对插件的使用造成的任何损失或问题负责。请合理使用插件，**遵守相关法律法规。**
+使用**本插件即表示您已阅读并同意遵守以上免责声明**。如果您不同意或无法遵守以上声明，请不要使用本插件。
+
+---
+
+## 💿 安装
+
+<details>
+<summary>安装</summary>
+
+`pipx` 安装
 
 ```bash
-# 添加运行依赖 / 开发依赖
-uv add httpx
-uv add --dev pytest-cov
+pipx install uv-project-template -U
+```
 
-# 同步依赖并执行代码
+`uv` 安装
+
+```bash
+uv add uv-project-template
+```
+
+`poetry` 安装
+
+```bash
+poetry add uv-project-template
+```
+
+`nb-cli`安装
+```bash
+nb plugin install uv-project-template -U
+```
+
+`git clone`安装(不推荐)
+
+- 命令窗口`cmd`下运行
+```bash
+git clone https://github.com/Cvandia/uv-project-template
+cd uv-project-template
 uv sync --locked
-uv run python -c "import uv_project_template"
-
-# 代码检查、格式化和测试
-uv run ruff check .
-uv run ruff format .
-uv run pytest
-uv run pre-commit run --all-files
-
-# 更新依赖（提交更新后的 uv.lock）
-uv lock --upgrade
-
-# 构建 wheel 和源码包，产物位于 dist/
-uv build
 ```
 
-`uv.lock` 应提交到版本控制；`.venv/` 和构建产物不提交。CI 使用 `uv sync --locked`，确保依赖声明和锁文件一致。
+ </details>
 
-## 项目结构
+ <details>
+ <summary>注意</summary>
 
-```text
-src/uv_project_template/    Python 包
-tests/                     pytest 测试
-pyproject.toml             项目元数据、依赖和 uv 构建后端
-uv.lock                    依赖锁文件
-.ruff.toml                 Ruff 规则
-.pre-commit-config.yaml    提交前检查
-.github/workflows/         检查、构建、发布与发布说明草稿
-```
+ 推荐镜像站下载
 
-## 发布
+ 清华源```https://pypi.tuna.tsinghua.edu.cn/simple```
 
-先设置自己的包名和版本，并在仓库的 Actions secrets 中添加 `PYPI_API_TOKEN`。推送 `v*` 标签会通过 `uv build` 和 `uv publish` 发布到 PyPI；标签版本应与 `pyproject.toml` 中的版本一致。
+ 阿里源```https://mirrors.aliyun.com/pypi/simple/```
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+</details>
 
-也可以在本地构建后运行 `uv publish`，按提示提供 PyPI 凭据。
+## ⚙️ 配置
 
-## 许可证与来源
+**在.env中添加以下配置**
 
-[MIT](LICENSE)。本模板改编自 [Cvandia/pdm-project-template](https://github.com/Cvandia/pdm-project-template)。
+| 基础配置 | 类型  | 必填项 | 默认值 | 说明  |
+| :------: | :---: | :----: | :----: | :---: |
+|   xxx    |  xxx  |  xxx   |  xxx   |  xxx  |
+
+**注：这里是配置的说明**
+
+## 🚀 使用
+
+> [!note]
+> 这里是使用说明
+
+### 指令：
+
+| 指令  |  需要@   | 范围  |    说明     | 权限  |
+| :---: | :------: | :---: | :---------: | :---: |
+| xxxx  | 根据配置 |  all  | tts语音生成 |  all  |
+
+## 🌙 Todo
+ - [x] 添加更多配置项
+
+**喜欢记得点个star⭐**
+
+## 💝 特别鸣谢
+
+- [x] [nonebot2](https://github.com/nonebot/nonebot2): 本项目的基础，非常好用的聊天机器人框架。
+
+## Contributer
+
+<a href="https://github.com/Cvandia/uv-project-template/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Cvandia/uv-project-template&max=1000" alt="contributors" />
+</a>
+
+## 📚 更多帮助
+
+**这里是额外帮助**
+1. xxxx
