@@ -1,0 +1,143 @@
+name: Release on version change
+
+on:
+  push:
+    branches: [main]
+    paths: [pyproject.toml]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compare project versions
+        id: version
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import subprocess
+          import tomllib
+          from pathlib import Path
+
+          def read_version(content):
+              value = tomllib.loads(content)["project"]["version"]
+              if not isinstance(value, str) or not value or value != value.strip():
+                  raise ValueError("project.version must be a nonempty version string")
+              return value
+
+          version = read_version(Path("pyproject.toml").read_text(encoding="utf-8"))
+          previous = ""
+          before = os.environ["BEFORE_SHA"]
+          if before and set(before) != {"0"}:
+              files = subprocess.check_output(
+                  ["git", "ls-tree", "--name-only", before, "--", "pyproject.toml"], text=True
+              )
+              if files.strip():
+                  previous = read_version(subprocess.check_output(
+                      ["git", "show", f"{before}:pyproject.toml"], text=True, encoding="utf-8"
+                  ))
+
+          tag = version if version.startswith("v") else f"v{version}"
+          subprocess.run(["git", "check-ref-format", f"refs/tags/{tag}"], check=True)
+          prerelease = bool(re.search(
+              r"(?:alpha|beta|preview|pre|dev|rc|a|b)[.-]?\d",
+              version.split("+", 1)[0], re.IGNORECASE,
+          ))
+          changed = version != previous
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"changed={str(changed).lower()}\n")
+              output.write(f"tag={tag}\nprerelease={str(prerelease).lower()}\n")
+          print(f"Version: {previous or '(none)'} -> {version}; release={changed}")
+          PY
+      - name: Publish GitHub Release
+        if: steps.version.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_PRERELEASE: ${{ steps.version.outputs.prerelease }}
+        with:
+          script: |
+            const repo = context.repo;
+            const tag = process.env.RELEASE_TAG;
+            const target = context.sha;
+            const prerelease = process.env.RELEASE_PRERELEASE === 'true';
+
+            async function findRelease() {
+              try {
+                return (await github.rest.repos.getReleaseByTag({ ...repo, tag })).data;
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+              const releases = await github.paginate(github.rest.repos.listReleases, {
+                ...repo, per_page: 100,
+              });
+              return releases.find(release => release.tag_name === tag);
+            }
+
+            async function checkTag() {
+              let object;
+              try {
+                object = (await github.rest.git.getRef({ ...repo, ref: `tags/${tag}` })).data.object;
+              } catch (error) {
+                if (error.status === 404) return;
+                throw error;
+              }
+              while (object.type === 'tag') {
+                object = (await github.rest.git.getTag({ ...repo, tag_sha: object.sha })).data.object;
+              }
+              if (object.type !== 'commit' || object.sha !== target) {
+                throw new Error(`Tag ${tag} already points to another object; refusing to move it.`);
+              }
+            }
+
+            async function publishDraft(release) {
+              let body = release.body;
+              if (!body) {
+                body = (await github.rest.repos.generateReleaseNotes({
+                  ...repo, tag_name: tag, target_commitish: target,
+                })).data.body;
+              }
+              return (await github.rest.repos.updateRelease({
+                ...repo, release_id: release.id, tag_name: tag, target_commitish: target,
+                name: tag, body, draft: false, prerelease,
+                make_latest: prerelease ? 'false' : 'legacy',
+              })).data;
+            }
+
+            let release = await findRelease();
+            if (release && !release.draft) {
+              core.notice(`Release ${tag} already exists: ${release.html_url}`);
+              return;
+            }
+            await checkTag();
+            if (release) {
+              release = await publishDraft(release);
+            } else {
+              try {
+                release = (await github.rest.repos.createRelease({
+                  ...repo, tag_name: tag, target_commitish: target, name: tag,
+                  draft: false, prerelease, generate_release_notes: true,
+                  make_latest: prerelease ? 'false' : 'legacy',
+                })).data;
+              } catch (error) {
+                if (error.status !== 422) throw error;
+                release = await findRelease();
+                if (!release) throw error;
+                if (release.draft) {
+                  await checkTag();
+                  release = await publishDraft(release);
+                }
+              }
+            }
+            core.notice(`Released ${tag}: ${release.html_url}`);

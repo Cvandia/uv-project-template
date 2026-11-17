@@ -133,3 +133,5 @@ uv sync --locked
 
 **这里是额外帮助**
 1. xxxx
+
+版本发布：更新 pyproject.toml 的 [project].version 并合并到 main 后，会自动创建 v版本号 标签及 GitHub Release，生成发布说明；版本不变或发布已存在时跳过，同版本草稿会发布，冲突标签会报错。预发布版本标记为 prerelease，使用内置 GITHUB_TOKEN，无需新增密钥。更新版本时也请按需更新 uv.lock。
